@@ -34,7 +34,29 @@ def main():
     # automatic backpropogation
     # http://colah.github.io/posts/2015-08-Backprop/
     # Grapdient Descent optimzier trainer with .5 learning rate
-    train_step = tf.train.GradientDescentOptimizer(0.5).minimzie(cross_entropy)
+    # TF simply shifts each variable a little bit in the direction
+    # that reduces the cost
+    # However this is one the many optimizers https://www.tensorflow.org/api_guides/python/train#Optimizers
+    train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+
+    # Launch the model in an InteractiveSession
+    sess = tf.InteractiveSession()
+    tf.global_variables_initializer().run()
+
+    # Run the training step for 1000 times!
+    for _ in range(1000):
+        batch_xs, batch_ys = mnist.train.next_batch(100)
+        sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
+
+    # Evaluating model
+    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+    # above gives us list of booleans
+    # [True, False, True, True] would become [1,0,1,1] which would become 0.75
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    print('Checking accuracy x = mnist test images')
+    print('y_ mnist test labels')
+    print(sess.run(accuracy,
+                   feed_dict={x: mnist.test.images, y_: mnist.test.labels}))
 
 
 if __name__ == '__main__':
