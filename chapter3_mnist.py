@@ -31,6 +31,10 @@ def main():
         -tf.reduce_sum(y_ * tf.log(y),
                        reduction_indices=[1]))
 
+    # automatic backpropogation
+    # http://colah.github.io/posts/2015-08-Backprop/
+    # Grapdient Descent optimzier trainer with .5 learning rate
+    train_step = tf.train.GradientDescentOptimizer(0.5).minimzie(cross_entropy)
 
 
 if __name__ == '__main__':
