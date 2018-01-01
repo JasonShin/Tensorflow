@@ -46,6 +46,51 @@ def main():
     # finally test the accuracy
     print(accuracy.eval(feed_dict={x: mnist.test.images, y_: mnist.test.labels}))
 
+    # Convolutional layer 1
+    # 5,5 => computing 32 features for each 5x5
+    # 1 => number of input channel
+    # 32 => number of output channel
+    W_conv1 = weight_variable([5, 5, 1, 32])
+    # bias vector with a component for each output channel
+    b_conv1 = bias_variable([32])
+
+    # Reshape x to 4d vector
+    x_image = tf.reshape(x, [-1, 28, 28, 1])
+
+    # convolve x image with weight tensor, add the bias, apply relu
+    h_conv1 = tf.nn.relu(conv2d(x_image, W_conv1) + b_conv1)
+
+    # reduce the image size to 14 x 14
+    h_pool1 = max_pool_2x2(h_conv1)
+
+    # Convolutional layer 2
+    # To build a deep neural network, we must stack multiple layers of them
+    W_conv2 = weight_variable([5, 5, 32, 64])
+    b_conv2 = bias_variable([64])
+
+    h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
+    h_pool2 = max_pool_2x2(h_conv2)
+
+
+# generating initial weight with small amount to prevent dead neurons
+def weight_variable(shape):
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    return tf.Variable(initial)
+
+
+def bias_variable(shape):
+    initial = tf.constant(0.1, shape=shape)
+    return tf.Variable(initial)
+
+
+def conv2d(x, W):
+    return tf.nn.conv2d(x, W, strides=[1, 1, 1, 1], padding='SAME')
+
+
+def max_pool_2x2(x):
+    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
+                            strides=[1, 2, 2, 1], padding='SAME')
+
 
 if __name__ == '__main__':
     main()
