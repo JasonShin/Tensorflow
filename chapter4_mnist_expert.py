@@ -54,7 +54,7 @@ def main():
     # bias vector with a component for each output channel
     b_conv1 = bias_variable([32])
 
-    # Reshape x to 4d vector
+    # Reshape x to 4d vector. note: you can either reshape or create conv first
     x_image = tf.reshape(x, [-1, 28, 28, 1])
 
     # convolve x image with weight tensor, add the bias, apply relu
