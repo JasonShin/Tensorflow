@@ -74,7 +74,69 @@ class RecurrentNeuralNetwork:
             self.ha[i] = hs
             self.af[i] = f
             self.ai[i] = inp
+            self.ac[i] = c
+            self.ao[i] = o
+            self.oa[i] = self.sigmoid(np.dot(self.w, hs))
+            self.x = self.eo[i - 1]
+        return self.oa
 
+    def backProp(self):
+        # update out weight matrices (Both in our Re
+        totalError = 0
+        # initialize matrices for gradient updates
+        dfcs = np.zeros(self.ys)
+        # hidden state
+        dfhs = np.zeros(self.ys)
+        # weight matrix
+        tu = np.zeros((self.ys, self.ys))
+        # forget gate
+        tfu = np.zeros((self. ys, self.xs + self.ys))
+        # input gate
+        tiu = np.zeros((self.ys, self.xs + self.ys))
+        # cell unit
+        tcu = np.zeros((self.ys, self.xs + self.ys))
+        # output gate
+        tou = np.zeros((self.ys, self.xs + self.ys))
+        # loop backwards through recurrences
+        for i in range(self.rl, -1, -1):
+            # error = calculatedOutput - expectedOutput
+            error = self.oa[i] - self.eo[i]
+            # calculate update for weight matrix
+            # (error * derivative of the output) * hidden state
+            tu += np.dot(np.atleast_2d(error * self.dsigmoid(self.oa[i])), np.atleast_2d(self.ha[i]).T)
+            # Time to propagate error back to exit of LSTM cell
+            # 1. error * RNN weight matrix
+            error = np.dot(error, self.w)
+            # 2. set input values of LSTM cell for recurrence i (horizontal stack of arrays, hidden + input)
+            self.LSTM.x = np.hstack((self.ha[i - 1], self.ia[i]))
+            # 3. set cell state of LSTM cell for recurrence i (pre-updates)
+            self.LSTM.cs = self.ca[i]
+            # Finally, call the LSTM cell's backprop, retreive gradient updates
+            fu, iu, cu, ou, dfcs, dfhs = self.LSTM.backProp(
+                error, self.ca[i - 1], self.af[i], self.ai[i], self.ac[i], self.ao[i], dfcs, dfhs
+            )
+            # calculate total error (not necessary, used to measure training progress)
+            totalError += np.sum(error)
+            # accumulate all gradient updates
+            # forget gate
+            tfu += fu
+            # input gate
+            tiu += iu
+            # cell state
+            tcu += cu
+            # output gate
+            tou += ou
+        # update LSTM matrices with average of accumulated gradient updates
+        self.LSTM.update(tfu / self.rl, tiu / self.rl, tcu / self.rl, tou / self.rl)
+        self.update(tu / self.rl)
+        return totalError
+
+    def update(self, u):
+        # vanilla implementation of RMSprop
+        self.G = 0.9 * self.G + 0.1 * u**2
+        self.w -= self.lr / np.sqrt(self.G + 1e-8) * u
+
+    # this is where we generate some sample text after having fully trained our model
 
 
 def main():
