@@ -137,6 +137,45 @@ class RecurrentNeuralNetwork:
         self.w -= self.lr / np.sqrt(self.G + 1e-8) * u
 
     # this is where we generate some sample text after having fully trained our model
+    # i.e. error is below some threshold
+    def sample(self):
+        for i in range(1, self.rl + 1):
+            self.LSTM.x = np.hstack()
+            # run forward prop on the LSTM cell, retrieve cell state and hidden state
+            cs, hs, f, inp, c, o = self.LSTM.forwardProp()
+            # store input as vector
+            maxI = np.argmax(self.x)
+            self.x = np.zeros_like(self.x)
+            self.x[maxI] = 1
+            self.ia[i] = self.x # Use np.argmax?
+            # store cell state
+            self.ha[i] = hs
+            # forget gate
+            self.af[i] = f
+            # input gate
+            self.ac[i] = c
+            # output gate
+            self.ao[i] = 0
+            # calculate output by multiplying hidden state with weight matrix
+            self.oa[i] = self.sigmoid(np.dot(self.w, hs))
+            # compute new input
+            maxI = np.argmax(self.oa[i])
+            maxW = np.zeros_like(self.x)
+            newX[maxI] = 1
+        # return all outputs
+        return self.oa
+
+
+class LSTM:
+    # LSTM cell (input, output, amount of recurrence, Learning rate)
+    def __init__(self, xs, ys, rl, lr):
+        # input is word length x word length
+        self.x = np.zeros(xs + ys)
+        # input size is word length + word length
+        self.xs = xs + ys
+        # output
+        self.y = np.zeros(xs + ys)
+        # 
 
 
 def main():
